@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Orbit Booking
 
-## Getting Started
+Production-ready online appointment booking SaaS with **Next.js**, **Supabase** (PostgreSQL + RLS), English/Arabic i18n + RTL, and WhatsApp workflows.
 
-First, run the development server:
+## Features
+
+- Marketing landing page with WhatsApp inquiry CTA (`استفسر الآن`)
+- Master Admin panel — business CRUD, renew (+1 month), WhatsApp reminders, analytics
+- Business dashboard — services, appointments, availability rules (hours, breaks, buffer)
+- Public booking page at `/[locale]/book/[slug]` with slot engine + WhatsApp confirmation
+- Password hashing (bcrypt), HTTP-only JWT cookies, Zod validation, Supabase RLS
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS 4
+- Supabase Free Tier (PostgreSQL, anon + service role)
+- jose (sessions) · bcryptjs · date-fns-tz · zod
+
+## Setup
+
+### 1. Install
+
+```bash
+npm install
+```
+
+### 2. Supabase
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Open **SQL Editor** and run the full script in:
+
+   `supabase/migrations/001_initial_schema.sql`
+
+3. Copy project URL and keys from **Settings → API**
+
+### 3. Environment
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in:
+
+| Variable | Notes |
+|----------|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_URL` | Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_ANON_KEY` | Anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Server only** — never expose to the browser |
+| `AUTH_SECRET` | Random string, ≥ 32 characters |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Default `96170985130` |
+
+### 4. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) (redirects to `/en`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Default admin
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+After running the migration:
 
-## Learn More
+- Username: `admin`
+- Password: `admin`
 
-To learn more about Next.js, take a look at the following resources:
+Change these immediately from **Admin → Update credentials**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Path | Description |
+|------|-------------|
+| `/en`, `/ar` | Landing page |
+| `/[locale]/admin/login` | Master admin login |
+| `/[locale]/admin` | Admin dashboard |
+| `/[locale]/dashboard/login` | Business login |
+| `/[locale]/dashboard` | Business portal |
+| `/[locale]/book/[slug]` | Public customer booking |
 
-## Deploy on Vercel
+## Security notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Admin and business mutations use the **service role** only on the server
+- `admins` and password hashes are blocked from public writes via RLS
+- Public booking inserts go through `create_public_appointment` (SECURITY DEFINER) with conflict checks
+- Inputs validated with Zod; passwords hashed with bcrypt (cost 12)
+- Session cookie: `httpOnly`, `sameSite=lax`, `secure` in production
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Branding
+
+Logo: `public/orbit-booking-logo.jpg`  
+Palette: navy `#003366`, blue `#007BFF` → cyan `#00C6FF`, purple `#7B2CBF`, orange `#FF8C00`
