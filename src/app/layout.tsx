@@ -14,6 +14,8 @@ const cairo = Cairo({
   display: "swap",
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim() || "http://localhost:3000";
+
 export const metadata: Metadata = {
   title: {
     default: "Orbit Booking",
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
   },
   description:
     "Orbit Booking — secure online appointment scheduling for modern businesses.",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(appUrl.startsWith("http") ? appUrl : `https://${appUrl}`),
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
